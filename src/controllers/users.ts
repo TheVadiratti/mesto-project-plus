@@ -5,7 +5,7 @@ const getUsers = (req: Request, res: Response) => User.find({})
   .then((users) => res.send(users))
   .catch(() => res.status(500).send({ message: 'Ошибка получения всех пользователей' }));
 
-const getUser = (req: Request, res: Response) => User.findById(req.params.id)
+const getUser = (req: Request, res: Response) => User.findById(req.params.userId)
   .then((user) => res.send(user))
   .catch(() => res.status(500).send('Ошибка получения данных пользователя'));
 
