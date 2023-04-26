@@ -1,6 +1,7 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import userRouter from './routes/users';
+import usersRouter from './routes/users';
+import cardsRouter from './routes/cards';
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   next();
 });
 
-app.use('/', userRouter);
+app.use('/', usersRouter);
+app.use('/', cardsRouter);
 
 app.listen(3000);
