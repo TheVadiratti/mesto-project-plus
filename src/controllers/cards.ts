@@ -7,10 +7,12 @@ const getCards = (req: Request, res: Response) => Card.find({})
 
 const createCard = (req: Request, res: Response) => {
   const { name, link } = req.body;
+  const owner = req.body.user._id;
 
   return Card.create({
     name,
     link,
+    owner,
   })
     .then((card) => res.send(card))
     .catch(() => res.status(500).send('Ошибка создания новой карточки'));
@@ -20,4 +22,26 @@ const deleteCard = (req: Request, res: Response) => Card.findByIdAndRemove(req.p
   .then((card) => res.send(card))
   .catch(() => res.status(500).send('Ошибка удаления карточки'));
 
-export { getCards, createCard, deleteCard };
+const likeCard = (req: Request, res: Response) => Card.findByIdAndUpdate(
+  req.params.cardId,
+  { $addToSet: { likes: req.body.user._id } },
+  { new: true },
+)
+  .then((likes) => res.send(likes))
+  .catch(() => res.status(500).send('Ошибка добавления лайка'));
+
+const dislikeCard = (req: Request, res: Response) => Card.findByIdAndUpdate(
+  req.params.cardId,
+  { $pull: { likes: req.body.user._id } },
+  { new: true },
+)
+  .then((likes) => res.send(likes))
+  .catch(() => res.status(500).send('Ошибка удаления лайка'));
+
+export {
+  getCards,
+  createCard,
+  deleteCard,
+  likeCard,
+  dislikeCard,
+};

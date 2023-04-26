@@ -21,4 +21,34 @@ const createUser = (req: Request, res: Response) => {
     .catch(() => res.status(500).send('Ошибка создания нового пользователя'));
 };
 
-export { getUsers, getUser, createUser };
+const updateProfile = (req: Request, res: Response) => {
+  const { name, about } = req.body;
+
+  return User.findByIdAndUpdate(
+    req.body.user._id,
+    { name, about },
+    { new: true },
+  )
+    .then((me) => res.send(me))
+    .catch(() => res.status(500).send('Ошибка изменения профиля'));
+};
+
+const updateAvatar = (req: Request, res: Response) => {
+  const { avatar } = req.body;
+
+  return User.findByIdAndUpdate(
+    req.body.user._id,
+    { avatar },
+    { new: true },
+  )
+    .then((me) => res.send(me))
+    .catch(() => res.status(500).send('Ошибка изменения аватара'));
+};
+
+export {
+  getUsers,
+  getUser,
+  createUser,
+  updateProfile,
+  updateAvatar,
+};
