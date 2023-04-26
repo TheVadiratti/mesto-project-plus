@@ -1,10 +1,5 @@
 import mongoose from 'mongoose';
-
-interface User {
-  name: string;
-  about: string;
-  avatar: string;
-}
+import { User } from '../types';
 
 const userSchema = new mongoose.Schema({
   name: {
