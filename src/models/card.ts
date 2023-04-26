@@ -14,7 +14,7 @@ const cardSchema = new Schema({
   },
   owner: {
     type: Schema.Types.ObjectId,
-    requored: true,
+    required: true,
   },
   likes: {
     type: [Schema.Types.ObjectId],
