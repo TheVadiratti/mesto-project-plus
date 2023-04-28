@@ -1,15 +1,26 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import User from '../models/user';
+import { IncorrectDataError, NotFoundError } from '../services/errors';
 
-const getUsers = (req: Request, res: Response) => User.find({})
+const getUsers = (req: Request, res: Response, next: NextFunction) => User.find({})
   .then((users) => res.send(users))
-  .catch(() => res.status(500).send({ message: 'Ошибка получения всех пользователей' }));
+  .catch(next);
 
-const getUser = (req: Request, res: Response) => User.findById(req.params.userId)
+const getUser = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => User.findById(req.params.userId)
   .then((user) => res.send(user))
-  .catch(() => res.status(500).send('Ошибка получения данных пользователя'));
+  .catch((err) => {
+    if (err.name === 'CastError') {
+      next(new NotFoundError('Пользователь по указанному _id не найден.'));
+    } else {
+      next(err);
+    }
+  });
 
-const createUser = (req: Request, res: Response) => {
+const createUser = (req: Request, res: Response, next: NextFunction) => {
   const { name, about, avatar } = req.body;
 
   return User.create({
@@ -18,10 +29,16 @@ const createUser = (req: Request, res: Response) => {
     avatar,
   })
     .then((user) => res.send(user))
-    .catch(() => res.status(500).send('Ошибка создания нового пользователя'));
+    .catch((err) => {
+      if (err.name === 'ValidatorError') {
+        next(new IncorrectDataError('Переданы некорректные данные при создании пользователя.'));
+      } else {
+        next(err);
+      }
+    });
 };
 
-const updateProfile = (req: Request, res: Response) => {
+const updateProfile = (req: Request, res: Response, next: NextFunction) => {
   const { name, about } = req.body;
 
   return User.findByIdAndUpdate(
@@ -30,10 +47,18 @@ const updateProfile = (req: Request, res: Response) => {
     { new: true },
   )
     .then((me) => res.send(me))
-    .catch(() => res.status(500).send('Ошибка изменения профиля'));
+    .catch((err) => {
+      if (err.name === 'ValidatorError') {
+        next(new IncorrectDataError('Переданы некорректные данные при обновлении профиля.'));
+      } else if (err.name === 'CastError') {
+        next(new NotFoundError('Пользователь с указанным _id не найден.'));
+      } else {
+        next(err);
+      }
+    });
 };
 
-const updateAvatar = (req: Request, res: Response) => {
+const updateAvatar = (req: Request, res: Response, next: NextFunction) => {
   const { avatar } = req.body;
 
   return User.findByIdAndUpdate(
@@ -42,7 +67,15 @@ const updateAvatar = (req: Request, res: Response) => {
     { new: true },
   )
     .then((me) => res.send(me))
-    .catch(() => res.status(500).send('Ошибка изменения аватара'));
+    .catch((err) => {
+      if (err.name === 'ValidatorError') {
+        next(new IncorrectDataError('Переданы некорректные данные при обновлении аватара.'));
+      } else if (err.name === 'CastError') {
+        next(new NotFoundError('Пользователь с указанным _id не найден.'));
+      } else {
+        next(err);
+      }
+    });
 };
 
 export {

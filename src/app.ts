@@ -1,5 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import errors from './middlewares/errors';
 import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
 
@@ -20,5 +21,7 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
+
+app.use(errors);
 
 app.listen(3000);
