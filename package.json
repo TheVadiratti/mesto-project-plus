@@ -1,5 +1,5 @@
 {
-  "name": "mesto-beckend",
+  "name": "mesto-backend",
   "version": "1.0.0",
   "description": "backend api for the mesto project",
   "main": "dist/app.js",
