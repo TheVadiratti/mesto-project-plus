@@ -55,7 +55,7 @@ const getMyProfile = (
   req: Request,
   res: Response,
   next: NextFunction,
-) => User.findById(req.query.user)
+) => User.findById(req.body.user._id)
   .then((user) => res.send(user))
   .catch((err) => {
     if (err.name === 'CastError') {

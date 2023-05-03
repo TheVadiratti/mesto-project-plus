@@ -20,7 +20,8 @@ export default (req: Request, res: Response, next: NextFunction) => {
     return next(new UnauthorizedError('Необходима авторизация.'));
   }
 
-  req.query.user = payload;
+  req.body.user = payload;
 
   next();
+  return null;
 };
