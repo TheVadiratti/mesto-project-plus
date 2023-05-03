@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { SECRET_KEY } from '../utils/constants';
 import User from '../models/user';
-import { IncorrectDataError, NotFoundError } from '../services/errors';
+import { IncorrectDataError, UnauthorizedError, NotFoundError } from '../services/errors';
 
 const getUsers = (req: Request, res: Response, next: NextFunction) => User.find({})
   .then((users) => res.send(users))
@@ -86,10 +89,37 @@ const updateAvatar = (req: Request, res: Response, next: NextFunction) => {
     });
 };
 
+const login = (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+
+  return User.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        next(new UnauthorizedError('Пользователь с такой почтой не найден.'));
+      } else {
+        bcrypt.compare(password, user.password)
+          .then((matched) => {
+            if (!matched) {
+              next(new UnauthorizedError('Неверная почта или пароль.'));
+            }
+
+            const token = jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
+
+            res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
+            res.send({ user });
+          });
+      }
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
 export {
   getUsers,
   getUser,
   createUser,
   updateProfile,
   updateAvatar,
+  login,
 };
