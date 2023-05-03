@@ -21,12 +21,20 @@ const getUser = (
   });
 
 const createUser = (req: Request, res: Response, next: NextFunction) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
 
   return User.create({
     name,
     about,
     avatar,
+    email,
+    password,
   })
     .then((user) => res.send(user))
     .catch((err) => {
