@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-const errors = (err: any, req: Request, res: Response) => {
+export default (err: any, req: Request, res: Response) => {
   const { statusCode = 500, message } = err;
 
   res.status(statusCode).send({
@@ -9,5 +9,3 @@ const errors = (err: any, req: Request, res: Response) => {
       : message,
   });
 };
-
-export default errors;
