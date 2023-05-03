@@ -49,6 +49,20 @@ const createUser = (req: Request, res: Response, next: NextFunction) => {
     });
 };
 
+const getMyProfile = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => User.findById(req.query.user)
+  .then((user) => res.send(user))
+  .catch((err) => {
+    if (err.name === 'CastError') {
+      next(new NotFoundError('Пользователь по указанному _id не найден.'));
+    } else {
+      next(err);
+    }
+  });
+
 const updateProfile = (req: Request, res: Response, next: NextFunction) => {
   const { name, about } = req.body;
 
@@ -119,6 +133,7 @@ export {
   getUsers,
   getUser,
   createUser,
+  getMyProfile,
   updateProfile,
   updateAvatar,
   login,

@@ -3,6 +3,7 @@ import {
   getUsers,
   getUser,
   createUser,
+  getMyProfile,
   updateProfile,
   updateAvatar,
   login,
@@ -13,6 +14,8 @@ const router = Router();
 router.get('/', getUsers);
 
 router.get('/:userId', getUser);
+
+router.get('/me', getMyProfile);
 
 router.patch('/me', updateProfile);
 
