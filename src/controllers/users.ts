@@ -32,21 +32,23 @@ const createUser = (req: Request, res: Response, next: NextFunction) => {
     password,
   } = req.body;
 
-  return User.create({
-    name,
-    about,
-    avatar,
-    email,
-    password,
-  })
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.name === 'ValidatorError') {
-        next(new IncorrectDataError('Переданы некорректные данные при создании пользователя.'));
-      } else {
-        next(err);
-      }
-    });
+  return bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
+    })
+      .then((user) => res.send(user))
+      .catch((err) => {
+        if (err.name === 'ValidationError') {
+          next(new IncorrectDataError('Переданы некорректные данные при создании пользователя.'));
+        } else {
+          next(err);
+        }
+      }))
+    .catch((err) => next(err));
 };
 
 const getMyProfile = (
@@ -109,18 +111,21 @@ const login = (req: Request, res: Response, next: NextFunction) => {
   return User.findOne({ email })
     .then((user) => {
       if (!user) {
-        next(new UnauthorizedError('Пользователь с такой почтой не найден.'));
+        next(new UnauthorizedError('Неверная почта или пароль.'));
       } else {
         bcrypt.compare(password, user.password)
           .then((matched) => {
             if (!matched) {
               next(new UnauthorizedError('Неверная почта или пароль.'));
+            } else {
+              const token = `Bearer ${jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' })}`;
+
+              res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
+              res.send(user);
             }
-
-            const token = jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' });
-
-            res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
-            res.send({ user });
+          })
+          .catch((err) => {
+            next(err);
           });
       }
     })
