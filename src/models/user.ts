@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { User } from '../types';
-import { EMAIL_REGEX } from '../utils/constants';
+import { EMAIL_REGEX, LINK_REGEX } from '../utils/constants';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -18,6 +18,12 @@ const userSchema = new mongoose.Schema({
   avatar: {
     type: String,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
+    validate: {
+      validator(link: string) {
+        return LINK_REGEX.test(link);
+      },
+      message: 'Некорректная ссылка',
+    },
   },
   email: {
     type: String,
@@ -27,7 +33,7 @@ const userSchema = new mongoose.Schema({
       validator(email: string) {
         return EMAIL_REGEX.test(email);
       },
-      message: 'Введите адрес электронной почты',
+      message: 'Некорректная электронная почта',
     },
   },
   password: {
