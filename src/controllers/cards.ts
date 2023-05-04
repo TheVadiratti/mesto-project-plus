@@ -33,7 +33,6 @@ const deleteCard = (
   const id = req.body.user._id;
 
   return Card.findById(req.params.cardId)
-    // eslint-disable-next-line consistent-return
     .then((card) => {
       if (!card) {
         next(new NotFoundError('Карточка с указанным _id не найдена.'));
