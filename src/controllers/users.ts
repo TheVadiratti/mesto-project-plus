@@ -14,7 +14,13 @@ const getUser = (
   res: Response,
   next: NextFunction,
 ) => User.findById(req.params.userId)
-  .then((user) => res.send(user))
+  .then((user) => {
+    if (user) {
+      res.send(user);
+    } else {
+      next(new NotFoundError('Пользователь по указанному _id не найден.'));
+    }
+  })
   .catch((err) => {
     if (err.name === 'CastError') {
       next(new NotFoundError('Пользователь по указанному _id не найден.'));
@@ -59,7 +65,7 @@ const getMyProfile = (
   .then((user) => res.send(user))
   .catch((err) => {
     if (err.name === 'CastError') {
-      next(new NotFoundError('Пользователь по указанному _id не найден.'));
+      next(new NotFoundError('Пользователь не найден.'));
     } else {
       next(err);
     }

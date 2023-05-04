@@ -11,9 +11,9 @@ const router = Router();
 
 router.get('/', getUsers);
 
-router.get('/:userId', getUser);
-
 router.get('/me', getMyProfile);
+
+router.get('/:userId', getUser);
 
 router.patch('/me', updateProfile);
 
