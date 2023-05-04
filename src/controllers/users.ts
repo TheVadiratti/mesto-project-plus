@@ -81,7 +81,7 @@ const updateProfile = (req: Request, res: Response, next: NextFunction) => {
   )
     .then((me) => res.send(me))
     .catch((err) => {
-      if (err.name === 'ValidatorError') {
+      if (err.name === 'ValidationError') {
         next(new IncorrectDataError('Переданы некорректные данные при обновлении профиля.'));
       } else if (err.name === 'CastError') {
         next(new NotFoundError('Пользователь с указанным _id не найден.'));
@@ -101,7 +101,7 @@ const updateAvatar = (req: Request, res: Response, next: NextFunction) => {
   )
     .then((me) => res.send(me))
     .catch((err) => {
-      if (err.name === 'ValidatorError') {
+      if (err.name === 'ValidationError') {
         next(new IncorrectDataError('Переданы некорректные данные при обновлении аватара.'));
       } else if (err.name === 'CastError') {
         next(new NotFoundError('Пользователь с указанным _id не найден.'));
