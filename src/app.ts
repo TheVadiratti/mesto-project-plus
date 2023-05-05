@@ -6,6 +6,7 @@ import cardsRouter from './routes/cards';
 import auth from './middlewares/auth';
 import { login, createUser } from './controllers/users';
 import { requestLogger, errorLogger } from './middlewares/logger';
+import { createUserValidation, loginValidation } from './validations/users';
 
 const app = express();
 
@@ -16,8 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(requestLogger);
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signup', createUserValidation, createUser);
+app.post('/signin', loginValidation, login);
 
 app.use(auth);
 

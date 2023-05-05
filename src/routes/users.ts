@@ -6,17 +6,23 @@ import {
   updateProfile,
   updateAvatar,
 } from '../controllers/users';
+import {
+  getUserValidation,
+  getMyProfileValidation,
+  updateProfileValidation,
+  updateAvatarValidation,
+} from '../validations/users';
 
 const router = Router();
 
 router.get('/', getUsers);
 
-router.get('/me', getMyProfile);
+router.get('/me', getMyProfileValidation, getMyProfile);
 
-router.get('/:userId', getUser);
+router.get('/:userId', getUserValidation, getUser);
 
-router.patch('/me', updateProfile);
+router.patch('/me', updateProfileValidation, updateProfile);
 
-router.patch('/me/avatar', updateAvatar);
+router.patch('/me/avatar', updateAvatarValidation, updateAvatar);
 
 export default router;

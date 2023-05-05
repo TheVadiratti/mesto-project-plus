@@ -2,10 +2,13 @@ import { celebrate, Joi } from 'celebrate';
 import { LINK_REGEX } from '../utils/constants';
 import { checkUser, checkId } from './index';
 
+const checkName = () => Joi.string().required().min(2).max(30);
+const checkLink = () => Joi.string().required().pattern(LINK_REGEX);
+
 const createCardValidation = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().pattern(LINK_REGEX),
+    name: checkName(),
+    link: checkLink,
     user: checkUser(),
   }),
 });
