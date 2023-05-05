@@ -18,7 +18,7 @@ const createCard = (req: Request, res: Response, next: NextFunction) => {
     link,
     owner,
   })
-    .then((card) => res.send(card))
+    .then((card) => res.status(201).send(card))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new IncorrectDataError('Переданы некорректные данные при создании карточки.'));

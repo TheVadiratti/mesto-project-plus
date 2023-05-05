@@ -53,7 +53,7 @@ const createUser = (req: Request, res: Response, next: NextFunction) => {
       email,
       password: hash,
     })
-      .then(() => res.send({
+      .then(() => res.status(201).send({
         name,
         about,
         avatar,
