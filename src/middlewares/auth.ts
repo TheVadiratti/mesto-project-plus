@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { UnauthorizedError } from '../services/errors';
+import { UnauthorizedError } from '../services/errors/constants';
 import { SECRET_KEY } from '../utils/constants';
 
 export default (req: Request, res: Response, next: NextFunction) => {
