@@ -3,7 +3,12 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { SECRET_KEY } from '../utils/constants';
 import User from '../models/user';
-import { IncorrectDataError, UnauthorizedError, NotFoundError } from '../services/errors';
+import {
+  IncorrectDataError,
+  UnauthorizedError,
+  NotFoundError,
+  ConflictError,
+} from '../services/errors';
 
 const getUsers = (req: Request, res: Response, next: NextFunction) => User.find({})
   .then((users) => res.send(users))
@@ -58,7 +63,13 @@ const createUser = (req: Request, res: Response, next: NextFunction) => {
           next(err);
         }
       }))
-    .catch((err) => next(err));
+    .catch((err) => {
+      if (err.code === 11000) {
+        next(new ConflictError('Пользователь с таким email уже существует.'));
+      } else {
+        next(err.name);
+      }
+    });
 };
 
 const getMyProfile = (
