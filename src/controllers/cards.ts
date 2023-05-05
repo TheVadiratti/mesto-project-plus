@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { Error } from 'mongoose';
 import Card from '../models/card';
 import ForbiddenError from '../services/errors/Forbidden';
 import NotFoundError from '../services/errors/NotFound';
@@ -7,7 +8,9 @@ import IncorrectDataError from '../services/errors/IncorrectData';
 const getCards = (req: Request, res: Response, next: NextFunction) => Card.find({})
   .populate(['owner', 'likes'])
   .then((cards) => res.send(cards))
-  .catch(next);
+  .catch((err) => {
+    next(err);
+  });
 
 const createCard = (req: Request, res: Response, next: NextFunction) => {
   const { name, link } = req.body;
@@ -20,7 +23,7 @@ const createCard = (req: Request, res: Response, next: NextFunction) => {
   })
     .then((card) => res.status(201).send(card))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err instanceof Error.ValidationError) {
         next(new IncorrectDataError('Переданы некорректные данные при создании карточки.'));
       } else {
         next(err);
@@ -36,7 +39,7 @@ const deleteCard = (
   const id = req.body.user._id;
   const errorCardNotFound = 'Карточка с указанным _id не найдена.';
 
-  return Card.findById(req.params.cardId)
+  return Card.findById(req.params.cardId).orFail()
     .then((card) => {
       if (!card) {
         next(new NotFoundError(errorCardNotFound));
@@ -49,8 +52,10 @@ const deleteCard = (
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError(errorCardNotFound));
+      } else if (err instanceof Error.CastError) {
+        next(new IncorrectDataError('Передан невалидный ID.'));
       } else {
         next(err);
       }
@@ -61,13 +66,13 @@ const likeCard = (req: Request, res: Response, next: NextFunction) => Card.findB
   req.params.cardId,
   { $addToSet: { likes: req.body.user._id } },
   { new: true },
-)
+).orFail()
   .then((likes) => res.send(likes))
   .catch((err) => {
-    if (err.name === 'ValidationError') {
-      next(new IncorrectDataError('Переданы некорректные данные для постановки лайка.'));
-    } else if (err.name === 'CastError') {
-      next(new NotFoundError('Передан несуществующий _id карточки.'));
+    if (err instanceof Error.DocumentNotFoundError) {
+      next(new NotFoundError('Карточка с указанным _id не найдена.'));
+    } else if (err instanceof Error.CastError) {
+      next(new IncorrectDataError('Передан невалидный ID.'));
     } else {
       next(err);
     }
@@ -77,13 +82,13 @@ const dislikeCard = (req: Request, res: Response, next: NextFunction) => Card.fi
   req.params.cardId,
   { $pull: { likes: req.body.user._id } },
   { new: true },
-)
+).orFail()
   .then((likes) => res.send(likes))
   .catch((err) => {
-    if (err.name === 'ValidationError') {
-      next(new IncorrectDataError('Переданы некорректные данные для снятия лайка.'));
-    } else if (err.name === 'CastError') {
-      next(new NotFoundError('Передан несуществующий _id карточки.'));
+    if (err instanceof Error.DocumentNotFoundError) {
+      next(new NotFoundError('Карточка с указанным _id не найдена.'));
+    } else if (err instanceof Error.CastError) {
+      next(new IncorrectDataError('Передан невалидный ID.'));
     } else {
       next(err);
     }

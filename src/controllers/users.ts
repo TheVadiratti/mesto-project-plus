@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { Error } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { SECRET_KEY } from '../utils/constants';
@@ -10,7 +11,9 @@ import ConflictError from '../services/errors/Conflict';
 
 const getUsers = (req: Request, res: Response, next: NextFunction) => User.find({})
   .then((users) => res.send(users))
-  .catch(next);
+  .catch((err) => {
+    next(err);
+  });
 
 const getUser = (
   req: Request,
@@ -19,7 +22,7 @@ const getUser = (
 ) => {
   const error = 'Пользователь по указанному _id не найден.';
 
-  return User.findById(req.params.userId)
+  return User.findById(req.params.userId).orFail()
     .then((user) => {
       if (user) {
         res.send(user);
@@ -28,8 +31,10 @@ const getUser = (
       }
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError(error));
+      } else if (err instanceof Error.CastError) {
+        next(new IncorrectDataError('Передан невалидный ID.'));
       } else {
         next(err);
       }
@@ -60,18 +65,16 @@ const createUser = (req: Request, res: Response, next: NextFunction) => {
         email,
       }))
       .catch((err) => {
-        if (err.name === 'ValidationError') {
+        if (err instanceof Error.ValidationError) {
           next(new IncorrectDataError('Переданы некорректные данные при создании пользователя.'));
+        } else if (err.code === 11000) {
+          next(new ConflictError('Пользователь с таким email уже существует.'));
         } else {
           next(err);
         }
       }))
     .catch((err) => {
-      if (err.code === 11000) {
-        next(new ConflictError('Пользователь с таким email уже существует.'));
-      } else {
-        next(err.name);
-      }
+      next(err);
     });
 };
 
@@ -79,10 +82,10 @@ const getMyProfile = (
   req: Request,
   res: Response,
   next: NextFunction,
-) => User.findById(req.body.user._id)
+) => User.findById(req.body.user._id).orFail()
   .then((user) => res.send(user))
   .catch((err) => {
-    if (err.name === 'CastError') {
+    if (err instanceof Error.DocumentNotFoundError) {
       next(new NotFoundError('Пользователь не найден.'));
     } else {
       next(err);
@@ -95,13 +98,13 @@ const updateProfile = (req: Request, res: Response, next: NextFunction) => {
   return User.findByIdAndUpdate(
     req.body.user._id,
     { name, about },
-    { new: true },
-  )
+    { new: true, runValidators: true },
+  ).orFail()
     .then((me) => res.send(me))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err instanceof Error.ValidationError) {
         next(new IncorrectDataError('Переданы некорректные данные при обновлении профиля.'));
-      } else if (err.name === 'CastError') {
+      } else if (err instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError('Пользователь с указанным _id не найден.'));
       } else {
         next(err);
@@ -115,13 +118,13 @@ const updateAvatar = (req: Request, res: Response, next: NextFunction) => {
   return User.findByIdAndUpdate(
     req.body.user._id,
     { avatar },
-    { new: true },
+    { new: true, runValidators: true },
   )
     .then((me) => res.send(me))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err instanceof Error.ValidationError) {
         next(new IncorrectDataError('Переданы некорректные данные при обновлении аватара.'));
-      } else if (err.name === 'CastError') {
+      } else if (err instanceof Error.DocumentNotFoundError) {
         next(new NotFoundError('Пользователь с указанным _id не найден.'));
       } else {
         next(err);
@@ -133,7 +136,7 @@ const login = (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
   const error = 'Неверная почта или пароль.';
 
-  return User.findOne({ email }).select('+password')
+  return User.findOne({ email }).select('+password').orFail()
     .then((user) => {
       if (!user) {
         next(new UnauthorizedError(error));
@@ -165,7 +168,13 @@ const login = (req: Request, res: Response, next: NextFunction) => {
       }
     })
     .catch((err) => {
-      next(err);
+      if (err instanceof Error.ValidationError) {
+        next(new IncorrectDataError('Переданы некорректный email.'));
+      } else if (err instanceof Error.DocumentNotFoundError) {
+        next(new NotFoundError(error));
+      } else {
+        next(err);
+      }
     });
 };
 
