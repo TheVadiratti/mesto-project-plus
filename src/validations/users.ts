@@ -1,6 +1,6 @@
 import { celebrate, Joi } from 'celebrate';
 import { LINK_REGEX, EMAIL_REGEX } from '../utils/constants';
-import { checkUser, checkId } from './index';
+import checkId from './index';
 
 const checkName = () => Joi.string().min(2).max(30);
 const checkAbout = () => Joi.string().min(2).max(200);
@@ -26,32 +26,21 @@ const loginValidation = celebrate({
 });
 
 const getUserValidation = celebrate({
-  body: Joi.object().keys({
-    user: checkUser(),
-  }),
   params: Joi.object().keys({
     userId: checkId(),
   }),
 });
 
-const getMyProfileValidation = celebrate({
-  body: Joi.object().keys({
-    user: checkUser(),
-  }),
-});
-
 const updateProfileValidation = celebrate({
   body: Joi.object().keys({
-    user: checkUser(),
-    name: checkName(),
-    about: checkAbout(),
+    name: checkName().required(),
+    about: checkAbout().required(),
   }),
 });
 
 const updateAvatarValidation = celebrate({
   body: Joi.object().keys({
-    user: checkUser(),
-    avatar: checkAvatar(),
+    avatar: checkAvatar().required(),
   }),
 });
 
@@ -59,7 +48,6 @@ export {
   createUserValidation,
   loginValidation,
   getUserValidation,
-  getMyProfileValidation,
   updateProfileValidation,
   updateAvatarValidation,
 };

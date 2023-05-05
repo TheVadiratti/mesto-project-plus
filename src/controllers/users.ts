@@ -8,6 +8,7 @@ import IncorrectDataError from '../services/errors/IncorrectData';
 import UnauthorizedError from '../services/errors/Unauthorized';
 import NotFoundError from '../services/errors/NotFound';
 import ConflictError from '../services/errors/Conflict';
+import { UserRequest } from '../types';
 
 const getUsers = (req: Request, res: Response, next: NextFunction) => User.find({})
   .then((users) => res.send(users))
@@ -79,10 +80,10 @@ const createUser = (req: Request, res: Response, next: NextFunction) => {
 };
 
 const getMyProfile = (
-  req: Request,
+  req: UserRequest,
   res: Response,
   next: NextFunction,
-) => User.findById(req.body.user._id).orFail()
+) => User.findById(req.user).orFail()
   .then((user) => res.send(user))
   .catch((err) => {
     if (err instanceof Error.DocumentNotFoundError) {
@@ -92,11 +93,11 @@ const getMyProfile = (
     }
   });
 
-const updateProfile = (req: Request, res: Response, next: NextFunction) => {
+const updateProfile = (req: UserRequest, res: Response, next: NextFunction) => {
   const { name, about } = req.body;
 
   return User.findByIdAndUpdate(
-    req.body.user._id,
+    req.user,
     { name, about },
     { new: true, runValidators: true },
   ).orFail()
@@ -112,11 +113,11 @@ const updateProfile = (req: Request, res: Response, next: NextFunction) => {
     });
 };
 
-const updateAvatar = (req: Request, res: Response, next: NextFunction) => {
+const updateAvatar = (req: UserRequest, res: Response, next: NextFunction) => {
   const { avatar } = req.body;
 
   return User.findByIdAndUpdate(
-    req.body.user._id,
+    req.user,
     { avatar },
     { new: true, runValidators: true },
   )

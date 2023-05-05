@@ -4,6 +4,7 @@ import Card from '../models/card';
 import ForbiddenError from '../services/errors/Forbidden';
 import NotFoundError from '../services/errors/NotFound';
 import IncorrectDataError from '../services/errors/IncorrectData';
+import { UserRequest } from '../types';
 
 const getCards = (req: Request, res: Response, next: NextFunction) => Card.find({})
   .populate(['owner', 'likes'])
@@ -12,9 +13,9 @@ const getCards = (req: Request, res: Response, next: NextFunction) => Card.find(
     next(err);
   });
 
-const createCard = (req: Request, res: Response, next: NextFunction) => {
+const createCard = (req: UserRequest, res: Response, next: NextFunction) => {
   const { name, link } = req.body;
-  const owner = req.body.user._id;
+  const owner = req.user;
 
   return Card.create({
     name,
@@ -32,11 +33,11 @@ const createCard = (req: Request, res: Response, next: NextFunction) => {
 };
 
 const deleteCard = (
-  req: Request,
+  req: UserRequest,
   res: Response,
   next: NextFunction,
 ) => {
-  const id = req.body.user._id;
+  const id = req.user;
   const errorCardNotFound = 'Карточка с указанным _id не найдена.';
 
   return Card.findById(req.params.cardId).orFail()
@@ -62,9 +63,9 @@ const deleteCard = (
     });
 };
 
-const likeCard = (req: Request, res: Response, next: NextFunction) => Card.findByIdAndUpdate(
+const likeCard = (req: UserRequest, res: Response, next: NextFunction) => Card.findByIdAndUpdate(
   req.params.cardId,
-  { $addToSet: { likes: req.body.user._id } },
+  { $addToSet: { likes: req.user } },
   { new: true },
 ).orFail()
   .then((likes) => res.send(likes))
@@ -78,9 +79,9 @@ const likeCard = (req: Request, res: Response, next: NextFunction) => Card.findB
     }
   });
 
-const dislikeCard = (req: Request, res: Response, next: NextFunction) => Card.findByIdAndUpdate(
+const dislikeCard = (req: UserRequest, res: Response, next: NextFunction) => Card.findByIdAndUpdate(
   req.params.cardId,
-  { $pull: { likes: req.body.user._id } },
+  { $pull: { likes: req.user } },
   { new: true },
 ).orFail()
   .then((likes) => res.send(likes))

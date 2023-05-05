@@ -1,9 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { ObjectId } from 'mongoose';
 import UnauthorizedError from '../services/errors/Unauthorized';
 import { SECRET_KEY } from '../utils/constants';
+import { UserRequest } from '../types';
 
-export default (req: Request, res: Response, next: NextFunction) => {
+export default (req: UserRequest, res: Response, next: NextFunction) => {
   const { authorization } = req.headers;
   const error = 'Необходима авторизация.';
 
@@ -21,8 +23,7 @@ export default (req: Request, res: Response, next: NextFunction) => {
     return next(new UnauthorizedError(error));
   }
 
-  req.body.user = payload;
+  req.user = payload as ObjectId;
 
   next();
-  return null;
 };
