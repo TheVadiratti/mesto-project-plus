@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import Card from '../models/card';
-import { ForbiddenError, IncorrectDataError, NotFoundError } from '../services/errors';
+import ForbiddenError from '../services/errors/Forbidden';
+import NotFoundError from '../services/errors/NotFound';
+import IncorrectDataError from '../services/errors/IncorrectData';
 
 const getCards = (req: Request, res: Response, next: NextFunction) => Card.find({})
   .then((cards) => res.send(cards))

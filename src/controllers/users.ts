@@ -3,12 +3,10 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { SECRET_KEY } from '../utils/constants';
 import User from '../models/user';
-import {
-  IncorrectDataError,
-  UnauthorizedError,
-  NotFoundError,
-  ConflictError,
-} from '../services/errors';
+import IncorrectDataError from '../services/errors/IncorrectData';
+import UnauthorizedError from '../services/errors/Unauthorized';
+import NotFoundError from '../services/errors/NotFound';
+import ConflictError from '../services/errors/Conflict';
 
 const getUsers = (req: Request, res: Response, next: NextFunction) => User.find({})
   .then((users) => res.send(users))
