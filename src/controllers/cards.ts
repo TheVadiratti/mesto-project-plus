@@ -5,6 +5,7 @@ import NotFoundError from '../services/errors/NotFound';
 import IncorrectDataError from '../services/errors/IncorrectData';
 
 const getCards = (req: Request, res: Response, next: NextFunction) => Card.find({})
+  .populate(['owner', 'likes'])
   .then((cards) => res.send(cards))
   .catch(next);
 
