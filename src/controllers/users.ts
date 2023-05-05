@@ -9,6 +9,7 @@ import UnauthorizedError from '../services/errors/Unauthorized';
 import NotFoundError from '../services/errors/NotFound';
 import ConflictError from '../services/errors/Conflict';
 import { UserRequest } from '../types';
+import setProfileData from './index';
 
 const getUsers = (req: Request, res: Response, next: NextFunction) => User.find({})
   .then((users) => res.send(users))
@@ -96,47 +97,15 @@ const getMyProfile = (
   });
 
 const updateProfile = (req: UserRequest, res: Response, next: NextFunction) => {
-  const { name, about } = req.body;
+  const data = req.body;
 
-  return User.findByIdAndUpdate(
-    req.user,
-    { name, about },
-    { new: true, runValidators: true },
-  ).orFail()
-    .then((me) => res.send(me))
-    .catch((err) => {
-      if (err instanceof Error.ValidationError) {
-        next(new IncorrectDataError('Переданы некорректные данные при обновлении профиля.'));
-      } else if (err instanceof Error.DocumentNotFoundError) {
-        next(new NotFoundError('Пользователь с указанным _id не найден.'));
-      } else if (err instanceof Error.CastError) {
-        next(new IncorrectDataError('Передан невалидный ID.'));
-      } else {
-        next(err);
-      }
-    });
+  return setProfileData(req, res, next, data);
 };
 
 const updateAvatar = (req: UserRequest, res: Response, next: NextFunction) => {
-  const { avatar } = req.body;
+  const data = req.body;
 
-  return User.findByIdAndUpdate(
-    req.user,
-    { avatar },
-    { new: true, runValidators: true },
-  )
-    .then((me) => res.send(me))
-    .catch((err) => {
-      if (err instanceof Error.ValidationError) {
-        next(new IncorrectDataError('Переданы некорректные данные при обновлении аватара.'));
-      } else if (err instanceof Error.DocumentNotFoundError) {
-        next(new NotFoundError('Пользователь с указанным _id не найден.'));
-      } else if (err instanceof Error.CastError) {
-        next(new IncorrectDataError('Передан невалидный ID.'));
-      } else {
-        next(err);
-      }
-    });
+  return setProfileData(req, res, next, data);
 };
 
 const login = (req: Request, res: Response, next: NextFunction) => {
