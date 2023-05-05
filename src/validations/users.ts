@@ -46,9 +46,6 @@ const updateProfileValidation = celebrate({
     name: checkName(),
     about: checkAbout(),
   }),
-  params: Joi.object().keys({
-    userId: checkId(),
-  }),
 });
 
 const updateAvatarValidation = celebrate({

@@ -13,21 +13,25 @@ const getUser = (
   req: Request,
   res: Response,
   next: NextFunction,
-) => User.findById(req.params.userId)
-  .then((user) => {
-    if (user) {
-      res.send(user);
-    } else {
-      next(new NotFoundError('Пользователь по указанному _id не найден.'));
-    }
-  })
-  .catch((err) => {
-    if (err.name === 'CastError') {
-      next(new NotFoundError('Пользователь по указанному _id не найден.'));
-    } else {
-      next(err);
-    }
-  });
+) => {
+  const error = 'Пользователь по указанному _id не найден.';
+
+  return User.findById(req.params.userId)
+    .then((user) => {
+      if (user) {
+        res.send(user);
+      } else {
+        next(new NotFoundError(error));
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new NotFoundError(error));
+      } else {
+        next(err);
+      }
+    });
+};
 
 const createUser = (req: Request, res: Response, next: NextFunction) => {
   const {
@@ -113,16 +117,17 @@ const updateAvatar = (req: Request, res: Response, next: NextFunction) => {
 
 const login = (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
+  const error = 'Неверная почта или пароль.';
 
   return User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        next(new UnauthorizedError('Неверная почта или пароль.'));
+        next(new UnauthorizedError(error));
       } else {
         bcrypt.compare(password, user.password)
           .then((matched) => {
             if (!matched) {
-              next(new UnauthorizedError('Неверная почта или пароль.'));
+              next(new UnauthorizedError(error));
             } else {
               const token = `Bearer ${jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' })}`;
 

@@ -31,11 +31,12 @@ const deleteCard = (
   next: NextFunction,
 ) => {
   const id = req.body.user._id;
+  const errorCardNotFound = 'Карточка с указанным _id не найдена.';
 
   return Card.findById(req.params.cardId)
     .then((card) => {
       if (!card) {
-        next(new NotFoundError('Карточка с указанным _id не найдена.'));
+        next(new NotFoundError(errorCardNotFound));
       } else if (String(card.owner) === String(id)) {
         return card.remove()
           .then(() => res.send(card))
@@ -46,7 +47,7 @@ const deleteCard = (
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        next(new NotFoundError('Карточка с указанным _id не найдена.'));
+        next(new NotFoundError(errorCardNotFound));
       } else {
         next(err);
       }

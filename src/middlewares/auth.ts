@@ -5,9 +5,10 @@ import { SECRET_KEY } from '../utils/constants';
 
 export default (req: Request, res: Response, next: NextFunction) => {
   const { authorization } = req.headers;
+  const error = 'Необходима авторизация.';
 
   if (!authorization || !authorization.startsWith('Bearer ')) {
-    return next(new UnauthorizedError('Необходима авторизация.'));
+    return next(new UnauthorizedError(error));
   }
 
   const token = authorization.replace('Bearer ', '');
@@ -17,7 +18,7 @@ export default (req: Request, res: Response, next: NextFunction) => {
   try {
     payload = jwt.verify(token, SECRET_KEY);
   } catch (err) {
-    return next(new UnauthorizedError('Необходима авторизация.'));
+    return next(new UnauthorizedError(error));
   }
 
   req.body.user = payload;
