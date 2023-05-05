@@ -9,7 +9,7 @@ import UnauthorizedError from '../services/errors/Unauthorized';
 import NotFoundError from '../services/errors/NotFound';
 import ConflictError from '../services/errors/Conflict';
 import { UserRequest } from '../types';
-import setProfileData from './index';
+import { findUser, setProfileData } from './index';
 
 const getUsers = (req: Request, res: Response, next: NextFunction) => User.find({})
   .then((users) => res.send(users))
@@ -21,27 +21,7 @@ const getUser = (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {
-  const error = 'Пользователь по указанному _id не найден.';
-
-  return User.findById(req.params.userId).orFail()
-    .then((user) => {
-      if (user) {
-        res.send(user);
-      } else {
-        next(new NotFoundError(error));
-      }
-    })
-    .catch((err) => {
-      if (err instanceof Error.DocumentNotFoundError) {
-        next(new NotFoundError(error));
-      } else if (err instanceof Error.CastError) {
-        next(new IncorrectDataError('Передан невалидный ID.'));
-      } else {
-        next(err);
-      }
-    });
-};
+) => findUser(res, next, req.params.userId);
 
 const createUser = (req: Request, res: Response, next: NextFunction) => {
   const {
@@ -84,17 +64,7 @@ const getMyProfile = (
   req: UserRequest,
   res: Response,
   next: NextFunction,
-) => User.findById(req.user).orFail()
-  .then((user) => res.send(user))
-  .catch((err) => {
-    if (err instanceof Error.DocumentNotFoundError) {
-      next(new NotFoundError('Пользователь не найден.'));
-    } else if (err instanceof Error.CastError) {
-      next(new IncorrectDataError('Передан невалидный ID.'));
-    } else {
-      next(err);
-    }
-  });
+) => findUser(res, next, req.user);
 
 const updateProfile = (req: UserRequest, res: Response, next: NextFunction) => {
   const data = req.body;

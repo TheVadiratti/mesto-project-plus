@@ -1,5 +1,5 @@
 import { Response, NextFunction } from 'express';
-import { Error } from 'mongoose';
+import { Error, ObjectId } from 'mongoose';
 import User from '../models/user';
 import { UserRequest } from '../types';
 import IncorrectDataError from '../services/errors/IncorrectData';
@@ -28,4 +28,26 @@ const setProfileData = (
     }
   });
 
-export default setProfileData;
+const findUser = (
+  res: Response,
+  next: NextFunction,
+  id?: string | ObjectId,
+) => User.findById(id).orFail()
+  .then((user) => {
+    if (user) {
+      res.send(user);
+    } else {
+      next(new NotFoundError('Пользователь по указанному ID не найден.'));
+    }
+  })
+  .catch((err) => {
+    if (err instanceof Error.DocumentNotFoundError) {
+      next(new NotFoundError('Пользователь по указанному ID не найден.'));
+    } else if (err instanceof Error.CastError) {
+      next(new IncorrectDataError('Передан невалидный ID.'));
+    } else {
+      next(err);
+    }
+  });
+
+export { setProfileData, findUser };
