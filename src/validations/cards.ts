@@ -8,7 +8,7 @@ const checkLink = () => Joi.string().required().pattern(LINK_REGEX);
 const createCardValidation = celebrate({
   body: Joi.object().keys({
     name: checkName(),
-    link: checkLink,
+    link: checkLink(),
   }),
 });
 
