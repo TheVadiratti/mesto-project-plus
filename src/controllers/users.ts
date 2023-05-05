@@ -53,7 +53,12 @@ const createUser = (req: Request, res: Response, next: NextFunction) => {
       email,
       password: hash,
     })
-      .then((user) => res.send(user))
+      .then(() => res.send({
+        name,
+        about,
+        avatar,
+        email,
+      }))
       .catch((err) => {
         if (err.name === 'ValidationError') {
           next(new IncorrectDataError('Переданы некорректные данные при создании пользователя.'));
@@ -141,7 +146,17 @@ const login = (req: Request, res: Response, next: NextFunction) => {
               const token = `Bearer ${jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' })}`;
 
               res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
-              res.send(user);
+              const {
+                name,
+                about,
+                avatar,
+              } = user;
+              res.send({
+                name,
+                about,
+                avatar,
+                email,
+              });
             }
           })
           .catch((err) => {
