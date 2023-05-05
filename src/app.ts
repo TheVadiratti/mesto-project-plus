@@ -7,6 +7,7 @@ import auth from './middlewares/auth';
 import { login, createUser } from './controllers/users';
 import { requestLogger, errorLogger } from './middlewares/logger';
 import { createUserValidation, loginValidation } from './validations/users';
+import notFoundRoute from './middlewares/notFoundRoute';
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use('/cards', cardsRouter);
 
 app.use(errorLogger);
 
+app.use(notFoundRoute);
 app.use(errors);
 
 app.listen(3000);
