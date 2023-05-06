@@ -6,7 +6,6 @@ import { SECRET_KEY } from '../utils/constants';
 import User from '../models/user';
 import IncorrectDataError from '../services/errors/IncorrectData';
 import UnauthorizedError from '../services/errors/Unauthorized';
-import NotFoundError from '../services/errors/NotFound';
 import ConflictError from '../services/errors/Conflict';
 import { UserRequest } from '../types';
 import { findUser, setProfileData } from './index';
@@ -82,7 +81,7 @@ const login = (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
   const error = 'Неверная почта или пароль.';
 
-  return User.findOne({ email }).select('+password').orFail()
+  return User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
         next(new UnauthorizedError(error));
@@ -114,13 +113,11 @@ const login = (req: Request, res: Response, next: NextFunction) => {
       }
     })
     .catch((err) => {
-      if (err instanceof Error.ValidationError) {
-        next(new IncorrectDataError('Переданы некорректный email.'));
-      } else if (err instanceof Error.DocumentNotFoundError) {
-        next(new NotFoundError(error));
-      } else {
-        next(err);
-      }
+      // Можно объяснить, пожалуйста.
+      // Здесь может быть ошибка валидации, если ввести некорректный email (например без @),
+      // но обрабатывать эту ошибку не нужно, потому что юзеру это не обязательно знать? получается
+      // все что ему нужно знать - что email или пароль неправильные?
+      next(err);
     });
 };
 

@@ -21,8 +21,6 @@ const setProfileData = (
       next(new IncorrectDataError('Переданы некорректные данные при обновлении профиля.'));
     } else if (err instanceof Error.DocumentNotFoundError) {
       next(new NotFoundError('Пользователь с указанным ID не найден.'));
-    } else if (err instanceof Error.CastError) {
-      next(new IncorrectDataError('Передан невалидный ID.'));
     } else {
       next(err);
     }
