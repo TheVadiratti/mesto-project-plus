@@ -2,7 +2,7 @@ import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { ObjectId } from 'mongoose';
 import UnauthorizedError from '../services/errors/Unauthorized';
-import { SECRET_KEY } from '../utils/constants';
+import { NODE_ENV, JWT_SECRET } from '../../mainconfig';
 import { UserRequest } from '../types';
 
 export default (req: UserRequest, res: Response, next: NextFunction) => {
@@ -18,7 +18,7 @@ export default (req: UserRequest, res: Response, next: NextFunction) => {
   let payload;
 
   try {
-    payload = jwt.verify(token, SECRET_KEY);
+    payload = jwt.verify(token, NODE_ENV === 'production' ? JWT_SECRET! : 'dev-secret');
   } catch (err) {
     return next(new UnauthorizedError(error));
   }

@@ -8,10 +8,11 @@ import { login, createUser } from './controllers/users';
 import { requestLogger, errorLogger } from './middlewares/logger';
 import { createUserValidation, loginValidation } from './validations/users';
 import notFoundRoute from './middlewares/notFoundRoute';
+import { DB_NAME, PORT } from '../mainconfig';
 
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/mestodb');
+mongoose.connect(`mongodb://localhost:27017/${DB_NAME}`);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -38,4 +39,4 @@ app.use(errorLogger);
 app.use(notFoundRoute);
 app.use(errors);
 
-app.listen(3000);
+app.listen(PORT);

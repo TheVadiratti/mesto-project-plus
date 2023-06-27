@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { Error } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { SECRET_KEY } from '../utils/constants';
+import { NODE_ENV, JWT_SECRET } from '../../mainconfig';
 import User from '../models/user';
 import IncorrectDataError from '../services/errors/IncorrectData';
 import UnauthorizedError from '../services/errors/Unauthorized';
@@ -91,7 +91,7 @@ const login = (req: Request, res: Response, next: NextFunction) => {
             if (!matched) {
               next(new UnauthorizedError(error));
             } else {
-              const token = `Bearer ${jwt.sign({ _id: user._id }, SECRET_KEY, { expiresIn: '7d' })}`;
+              const token = `Bearer ${jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET! : 'dev-secret', { expiresIn: '7d' })}`;
 
               res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
               const {
