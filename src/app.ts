@@ -18,6 +18,13 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(requestLogger);
 
+// FIXME краштест для ревью, потом удалить
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
+
 app.post('/signup', createUserValidation, createUser);
 app.post('/signin', loginValidation, login);
 
