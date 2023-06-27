@@ -3,6 +3,11 @@ import mongoose from 'mongoose';
 import errors from './middlewares/errors';
 import usersRouter from './routes/users';
 import cardsRouter from './routes/cards';
+import auth from './middlewares/auth';
+import { login, createUser } from './controllers/users';
+import { requestLogger, errorLogger } from './middlewares/logger';
+import { createUserValidation, loginValidation } from './validations/users';
+import notFoundRoute from './middlewares/notFoundRoute';
 
 const app = express();
 
@@ -11,17 +16,19 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-  req.body.user = {
-    _id: '6448ce5b7272030c477f5ce1',
-  };
+app.use(requestLogger);
 
-  next();
-});
+app.post('/signup', createUserValidation, createUser);
+app.post('/signin', loginValidation, login);
+
+app.use(auth);
 
 app.use('/users', usersRouter);
 app.use('/cards', cardsRouter);
 
+app.use(errorLogger);
+
+app.use(notFoundRoute);
 app.use(errors);
 
 app.listen(3000);

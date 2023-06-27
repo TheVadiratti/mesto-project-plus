@@ -1,13 +1,11 @@
 import { Request, Response } from 'express';
 
-const errors = (err: any, req: Request, res: Response) => {
+export default (err: any, req: Request, res: Response) => {
   const { statusCode = 500, message } = err;
 
-  res.status(statusCode).send({
-    message: statusCode === 500
-      ? 'На сервере произошла ошибка'
-      : message,
-  });
+  if (statusCode === 500) {
+    res.status(statusCode).send({ message: 'На сервере произошла ошибка' });
+  } else {
+    res.status(statusCode).send({ message });
+  }
 };
-
-export default errors;

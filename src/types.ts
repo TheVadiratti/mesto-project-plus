@@ -1,9 +1,12 @@
+import { Request } from 'express';
 import { ObjectId } from 'mongoose';
 
 type User = {
   name: string;
   about: string;
   avatar: string;
+  email: string;
+  password: string;
 };
 
 type Card = {
@@ -14,4 +17,8 @@ type Card = {
   createAt: Date;
 };
 
-export { User, Card };
+interface UserRequest extends Request {
+  user?: ObjectId;
+}
+
+export { User, Card, UserRequest };
